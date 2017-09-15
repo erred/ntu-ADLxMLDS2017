@@ -128,7 +128,7 @@ def main(unused_argv):
     listy = enumerate(predict_results)
     fo.write("id, label\n")
     for e in listy:
-        fo.write("{},{}\n".format(e[0],e[1].classes))
+        fo.write("{},{}\n".format(e[0],e[1][classes]))
     fo.close()
 
 
