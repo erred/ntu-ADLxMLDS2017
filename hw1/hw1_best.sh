@@ -1,2 +1,2 @@
 #!/bin/sh
-python3 best.py "$1" "$2"
+python3 rnn.py "$1" "$2"
