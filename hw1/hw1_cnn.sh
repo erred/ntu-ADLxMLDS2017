@@ -1,2 +1,2 @@
 #!/bin/sh
-python3 cnn.py "$1" "$2"
+python3 cnn.py "test" "$1" "$2"
