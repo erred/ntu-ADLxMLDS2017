@@ -212,6 +212,7 @@ if __name__ == "__main__":
     else:
         inputDir = sys.argv[2]
         outputFile = sys.argv[3]
+
         test_fn = iofn.testFromDir(inputDir, BATCHSIZE)
         est = iofn.createEstimator(MODELDIR, model_fn, EPOCH_STEPS)
         predictions = est.predict(input_fn=test_fn)
@@ -228,3 +229,18 @@ if __name__ == "__main__":
 
         print(preds)
         iofn.saveOutput(preds, outputFile)
+
+        if mode != 'test-special':
+            peerOutputFile = sys.argv[4]
+
+            test_fn = iofn.testFromDir(inputDir, BATCHSIZE, 'peer')
+            # est = iofn.createEstimator(MODELDIR, model_fn, EPOCH_STEPS)
+            predictions = est.predict(input_fn=test_fn)
+            preds = [
+                [
+                    p['id'].decode('utf-8'),
+                    iofn.decodeCaption(p['prediction'][:p['len']])
+                ]
+                for p in predictions]
+            print(preds)
+            iofn.saveOutput(preds, peerOutputFile)

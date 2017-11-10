@@ -70,10 +70,12 @@ def trainEvalFromTFRecord(inputDir, batchsize, epochs, version=1):
     return train_fn, eval_fn
 
 
-def testFromDir(inputDir, batchsize):
+def testFromDir(inputDir, batchsize, d='test'):
     ids = []
     dats = []
     dir = os.path.join(inputDir, 'testing_data/feat')
+    if d == 'peer':
+        dir = os.path.join(inputDir, 'peer_review/feat')
     for f in os.listdir(dir):
         if not f.endswith('.npy'):
             continue
