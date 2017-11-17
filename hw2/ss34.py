@@ -8,7 +8,7 @@ import iofn
 # =================== Hyperparams
 VERSION = 'ss34'
 BATCHSIZE = 128
-EPOCHS = 12
+EPOCHS = 36
 EMBED_DIMS = 20
 LEARNING_RATE = 0.001
 SHARED_UNITS = 1024
@@ -227,7 +227,7 @@ if __name__ == "__main__":
             special = ['klteYv1Uv9A_27_33.avi', '5YJaS2Eswg0_22_26.avi', 'UbmZAe5u5FI_132_141.avi', 'JntMAcTlOF0_50_70.avi', 'tJHUH9tpqPg_113_118.avi']
             preds = [p for p in preds if p[0] in special]
 
-        print(preds)
+        # print(preds)
         iofn.saveOutput(preds, outputFile)
 
         if mode != 'test-special':
