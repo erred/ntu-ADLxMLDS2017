@@ -107,7 +107,7 @@ def model_fn(features, labels, mode):
         dtype=tf.float32)
 
     # ==================== Decoder
-    projection = tf.layers.Dense(
+    projection = tf.contrib.keras.layers.Dense(
         units=NUM_CLASSES,
         activation=tf.nn.relu)
     decoder_cell = tf.contrib.rnn.LSTMCell(
