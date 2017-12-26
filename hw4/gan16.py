@@ -342,8 +342,8 @@ def test():
 
             imgs = generator.predict_on_batch([noise, hair, eyes])
             for j in range(len(imgs)):
-                fname = OUTPUTDIR + '/sample_{}_{}.jpg'.format(i, j)
-                imsave(fname, imgs[j])
+                fname = 'samples/sample_{}_{}.jpg'.format(id, j)
+                imsave(fname, np.clip(imgs[j], -1, 1))
 
 
 
@@ -353,4 +353,4 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'early':
         early(5)
     elif sys.argv[1] == 'test':
-        test():
+        test()
