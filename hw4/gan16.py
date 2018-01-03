@@ -7,11 +7,10 @@ from collections import deque
 
 import numpy as np
 from keras.backend import int_shape
-from keras.layers import (Activation, AvgPool2D, BatchNormalization,
-                          Concatenate, Conv2D, Conv2DTranspose, Deconv2D,
-                          Dense, Dropout, Embedding, Flatten, GaussianNoise,
-                          GlobalAvgPool2D, Input, LeakyReLU, RepeatVector,
-                          Reshape)
+from keras.layers import (
+    Activation, AvgPool2D, BatchNormalization, Concatenate, Conv2D,
+    Conv2DTranspose, Deconv2D, Dense, Dropout, Embedding, Flatten,
+    GaussianNoise, GlobalAvgPool2D, Input, LeakyReLU, RepeatVector, Reshape)
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.utils import to_categorical
@@ -20,32 +19,31 @@ from skimage.io import imread, imsave
 from skimage.transform import resize
 
 # np.random.seed(int(sys.argv[2]))
-np.random.seed(1337)
-
+np.random.seed(4096)
 
 # https://github.com/pavitrakumar78/Anime-Face-GAN-Keras
 
 # ============== Training Tunable
 # EPOCHS          = 20
-BATCHSIZE       = 128
-UPDATE_RATIO    = 2 * 1
-LOGFREQ         = 10
-LOGIMGFREQ      = 100
-LOGMODELFREQ    = 200
+BATCHSIZE = 128
+UPDATE_RATIO = 2 * 1
+LOGFREQ = 10
+LOGIMGFREQ = 100
+LOGMODELFREQ = 200
 REPLAYSAMPLEPROB = 0.1
 
 # ============== Architecture Tunable
-EMBED_HAIR      = 8
-EMBED_EYES      = 8
-NOISE_INPUT     = 256
+EMBED_HAIR = 8
+EMBED_EYES = 8
+NOISE_INPUT = 256
 
 # ============== Constants
-BASENAME        = os.path.basename(os.path.splitext(sys.argv[0])[0])
-MODELDIR        = 'model/' + BASENAME
-MODELFILE_GEN   = MODELDIR + '/genmodel'
-OUTPUTDIR       = 'out/' + BASENAME
-HAIR_COLORS     = 12 + 1
-EYE_COLORS      = 11 + 1
+BASENAME = os.path.basename(os.path.splitext(sys.argv[0])[0])
+MODELDIR = 'model/' + BASENAME
+MODELFILE_GEN = MODELDIR + '/genmodel'
+OUTPUTDIR = 'out/' + BASENAME
+HAIR_COLORS = 12 + 1
+EYE_COLORS = 11 + 1
 # LABELS_GOOD = 11418
 # LABELS_HAIR = 2686
 # LABELS_EYES = 1607
@@ -56,7 +54,11 @@ if not os.path.exists(OUTPUTDIR):
 if not os.path.exists(MODELDIR):
     os.makedirs(MODELDIR)
 
-valid_eyes = ['aqua eyes', 'black eyes', 'blue eyes', 'brown eyes', 'gray eyes', 'green eyes', 'orange eyes', 'pink eyes', 'purple eyes', 'red eyes', 'yellow eyes']
+valid_eyes = [
+    'aqua eyes', 'black eyes', 'blue eyes', 'brown eyes', 'gray eyes',
+    'green eyes', 'orange eyes', 'pink eyes', 'purple eyes', 'red eyes',
+    'yellow eyes'
+]
 eInvF = {
     'aqua eyes': 13.137209302325582,
     'black eyes': 50.73952095808383,
@@ -68,8 +70,13 @@ eInvF = {
     'pink eyes': 24.52532561505065,
     'purple eyes': 9.745255894192065,
     'red eyes': 5.602314049586777,
-    'yellow eyes': 14.205364626990779}
-valid_hair = ['aqua hair', 'black hair', 'blonde hair', 'blue hair', 'brown hair', 'gray hair', 'green hair', 'orange hair', 'pink hair', 'purple hair', 'red hair', 'white hair']
+    'yellow eyes': 14.205364626990779
+}
+valid_hair = [
+    'aqua hair', 'black hair', 'blonde hair', 'blue hair', 'brown hair',
+    'gray hair', 'green hair', 'orange hair', 'pink hair', 'purple hair',
+    'red hair', 'white hair'
+]
 hInvF = {
     'aqua hair': 23.04218928164196,
     'black hair': 7.459579180509413,
@@ -82,9 +89,11 @@ hInvF = {
     'pink hair': 11.3464345873105,
     'purple hair': 15.013372956909361,
     'red hair': 19.19088319088319,
-    'white hair': 23.200918484500573}
+    'white hair': 23.200918484500573
+}
 
 # ==================================== Data Gen
+
 
 def labelReader(path):
     good_labels, only_hair, only_eyes, bad_labels = {}, {}, {}, {}
@@ -95,9 +104,9 @@ def labelReader(path):
             hair, eyes = [], []
             for t in tags:
                 if t in valid_eyes:
-                    eyes.append(valid_eyes.index(t)+1)
+                    eyes.append(valid_eyes.index(t) + 1)
                 elif t in valid_hair:
-                    hair.append(valid_hair.index(t)+1)
+                    hair.append(valid_hair.index(t) + 1)
             if len(hair) == 1 and len(eyes) == 1:
                 good_labels[row[0]] = {'hair': hair, 'eyes': eyes}
             elif len(hair) == 1:
@@ -107,6 +116,7 @@ def labelReader(path):
             else:
                 bad_labels[row[0]] = {'hair': hair, 'eyes': eyes}
     return good_labels, only_hair, only_eyes, bad_labels
+
 
 def dataReader(path):
     datag, datah, datae, datab = [], [], [], []
@@ -130,15 +140,18 @@ def dataReader(path):
     return datag + datah + datae + datab
     # return datag
 
+
 def dataGen(path):
     dat = dataReader(path)
     while True:
         np.random.shuffle(dat)
         data = []
-        for k in range(len(dat)//BATCHSIZE):
+        for k in range(len(dat) // BATCHSIZE):
             i, s, h, e = [], [], [], []
-            for d in dat[k*BATCHSIZE:(k+1)*BATCHSIZE]:
-                img = resize(img_as_float(imread('data/faces/'+d[0]+'.jpg')), (64, 64))
+            for d in dat[k * BATCHSIZE:(k + 1) * BATCHSIZE]:
+                img = resize(
+                    img_as_float(imread('data/faces/' + d[0] + '.jpg')),
+                    (64, 64))
                 i.append(img)
                 s.append(d[1])
                 h.append(d[2])
@@ -148,22 +161,33 @@ def dataGen(path):
         for d in data:
             yield d
 
+
 def fakeDataGen():
     while True:
         noise = np.random.normal(size=[BATCHSIZE, NOISE_INPUT])
-        hair = np.concatenate([np.arange(1, HAIR_COLORS), np.random.randint(1, HAIR_COLORS, [BATCHSIZE-(HAIR_COLORS-1)])])
+        hair = np.concatenate([
+            np.arange(1, HAIR_COLORS),
+            np.random.randint(1, HAIR_COLORS, [BATCHSIZE - (HAIR_COLORS - 1)])
+        ])
         eyes = np.random.randint(1, EYE_COLORS, [BATCHSIZE])
         yield noise, hair, eyes
 
 
 # ==================================== Discriminator
 
+
 def convBlock(x, filters, kernel, strides=2, bn=True):
-    x = Conv2D(filters, kernel, strides=strides, padding='same', kernel_initializer='glorot_uniform')(x)
+    x = Conv2D(
+        filters,
+        kernel,
+        strides=strides,
+        padding='same',
+        kernel_initializer='glorot_uniform')(x)
     if bn:
         x = BatchNormalization(momentum=0.5)(x)
     x = LeakyReLU(0.2)(x)
     return x
+
 
 def build_discriminator():
     mi = Input([64, 64, 3])
@@ -183,8 +207,14 @@ def build_discriminator():
 
 # ==================================== Generator
 
+
 def deconv(x, filters, kernel, strides=2, act='lrelu', pad='same', bn=True):
-    x = Conv2DTranspose(filters, kernel, strides=strides, padding=pad, kernel_initializer='glorot_uniform')(x)
+    x = Conv2DTranspose(
+        filters,
+        kernel,
+        strides=strides,
+        padding=pad,
+        kernel_initializer='glorot_uniform')(x)
     if bn:
         x = BatchNormalization(momentum=0.5)(x)
     if act == 'lrelu':
@@ -192,6 +222,7 @@ def deconv(x, filters, kernel, strides=2, act='lrelu', pad='same', bn=True):
     elif act == 'tanh':
         x = Activation('tanh')(x)
     return x
+
 
 def build_generator():
     # hair
@@ -221,6 +252,7 @@ def build_generator():
     model = Model([ni, hi, ei], n)
     return model
 
+
 def build_models():
     opt = Adam(0.0002, 0.5)
 
@@ -228,16 +260,30 @@ def build_models():
     generator.compile(loss='binary_crossentropy', optimizer=opt)
 
     discriminator = build_discriminator()
-    discriminator.compile(loss=['binary_crossentropy', 'sparse_categorical_crossentropy', 'sparse_categorical_crossentropy'], loss_weights=[0.34, 0.33, 0.33], optimizer=opt, metrics=['accuracy'])
+    discriminator.compile(
+        loss=[
+            'binary_crossentropy', 'sparse_categorical_crossentropy',
+            'sparse_categorical_crossentropy'
+        ],
+        loss_weights=[0.34, 0.33, 0.33],
+        optimizer=opt,
+        metrics=['accuracy'])
 
     discriminator.trainable = False
 
     g_in = [Input([NOISE_INPUT]), Input([1]), Input([1])]
     d_out = discriminator(generator(g_in))
     combined = Model(g_in, d_out)
-    combined.compile(loss=['binary_crossentropy', 'sparse_categorical_crossentropy', 'sparse_categorical_crossentropy'], loss_weights=[0.5, 0.25, 0.25], optimizer=opt)
+    combined.compile(
+        loss=[
+            'binary_crossentropy', 'sparse_categorical_crossentropy',
+            'sparse_categorical_crossentropy'
+        ],
+        loss_weights=[0.5, 0.25, 0.25],
+        optimizer=opt)
 
     return generator, discriminator, combined
+
 
 def train():
     print('building models')
@@ -246,8 +292,7 @@ def train():
     print('building data gens')
     datgen = dataGen('data/tags_clean.csv')
     fgen = fakeDataGen()
-    replay = deque(maxlen=BATCHSIZE*500)
-
+    replay = deque(maxlen=BATCHSIZE * 500)
 
     lasttime = time.time()
     dLoss, gLoss = [], []
@@ -264,24 +309,26 @@ def train():
 
         # train disc
         disc.trainable = True
-        dl1 = disc.train_on_batch(imgs, [valid, hair-1, eyes-1], sample_weight=sample_weights)
-        dl2 = disc.train_on_batch(imgs_fake, [fake, fh-1, fe-1])
+        dl1 = disc.train_on_batch(
+            imgs, [valid, hair - 1, eyes - 1], sample_weight=sample_weights)
+        dl2 = disc.train_on_batch(imgs_fake, [fake, fh - 1, fe - 1])
         dLoss.append(dl1)
         dLoss.append(dl2)
         disc.trainable = False
 
         for k in range(UPDATE_RATIO):
             noise, fh, fe = next(fgen)
-            gl = comb.train_on_batch([noise, fh, fe], [valid, fh-1, fe-1])
+            gl = comb.train_on_batch([noise, fh, fe], [valid, fh - 1, fe - 1])
             gLoss.append(gl)
 
         # logging
         if i % LOGFREQ == 0:
-            print('step: {}\tdLoss: {:.2f}\tgLoss: {:.2f}'.format(i, np.mean(dLoss), np.mean(gLoss)))
+            print('step: {}\tdLoss: {:.2f}\tgLoss: {:.2f}'.format(
+                i, np.mean(dLoss), np.mean(gLoss)))
             dLoss, gLoss = [], []
 
         if i % LOGIMGFREQ == 0:
-            fname = OUTPUTDIR + '/out_{:03d}.jpg'.format(i//1000)
+            fname = OUTPUTDIR + '/out_{:03d}.jpg'.format(i // 1000)
             new_img = np.clip(np.hstack(imgs_fake[:16]), -1, 1)
             if not os.path.exists(fname):
                 imsave(fname, new_img)
@@ -292,7 +339,7 @@ def train():
         if i % LOGMODELFREQ == 0:
             gen.save_weights(MODELFILE_GEN)
             curtime = time.time()
-            print('saved model, time: ', curtime-lasttime)
+            print('saved model, time: ', curtime - lasttime)
             lasttime = curtime
 
 
@@ -313,6 +360,7 @@ def early(images):
     allimg = np.clip(np.hstack(imgs[:]), -1, 1)
     imsave(fname, allimg)
 
+
 def test():
     generator = build_generator()
     generator.compile(loss=['binary_crossentropy'], optimizer='adam')
@@ -329,11 +377,11 @@ def test():
             hair = 0
             for i, e in enumerate(valid_eyes):
                 if e in r[1]:
-                    eyes = i
+                    eyes = i + 1
                     break
             for i, h in enumerate(valid_hair):
                 if h in r[1]:
-                    hair = i
+                    hair = i + 1
                     break
 
             noise = np.random.normal(size=[5, NOISE_INPUT])
@@ -342,9 +390,11 @@ def test():
 
             imgs = generator.predict_on_batch([noise, hair, eyes])
             for j in range(len(imgs)):
-                fname = 'samples/sample_{}_{}.jpg'.format(id, j)
+                fname = 'samples/sample_{}_{}.jpg'.format(id, j + 1)
                 imsave(fname, np.clip(imgs[j], -1, 1))
-
+            # fname = 'samples/all_{}.jpg'.format(id)
+            # allimg = np.clip(np.hstack(imgs[:]), -1, 1)
+            # imsave(fname, allimg)
 
 
 if __name__ == '__main__':
